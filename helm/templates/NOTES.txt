@@ -1,0 +1,7 @@
+Don't forget to set TELE_TOKEN with 
+
+--set secret.secretValue=TELE_TOKEN
+
+for example 
+
+helm install tbot ./helm --set secret.secretValue=TELE_TOKEN
