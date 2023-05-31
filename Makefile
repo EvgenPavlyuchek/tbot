@@ -1,6 +1,7 @@
 # APP=$(shell basename $(shell git remote get-url origin))  #  $(APP)    shell dpkg --print-architecture
 APP=$(subst .git,,$(shell basename $(shell git remote get-url origin)))
-REGISTRY=ghcr.io/evgenpavlyuchek
+# REGISTRY=ghcr.io/evgenpavlyuchek
+REGISTRY=terr
 VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
 TARGETOS=linux #linux darwin windows
 TARGETARCH=arm64 #amd64 arm64 arm i386

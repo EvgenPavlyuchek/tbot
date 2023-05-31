@@ -4,8 +4,8 @@
 replicaCount: 1
 image:
   repository: terr
-  tag: "v1.0.7-729d5b3"
-  arch: amd64
+  tag: "v1.0.7-a5e1123"
+  arch: arm64
 secret:
   name: tbot
   tokenName: TELE_TOKEN
