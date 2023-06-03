@@ -42,6 +42,7 @@ jobs:
           APP: "tbot"
           # REGISTRY: ${{ secrets.GIT_USERNAME }}
           REGISTRY: ${{ github.repository_owner }} 
+          # secretValue: ${{ env.TELEGRAM_TOKEN_ENV }} 
         run: make image push
 
   cd:

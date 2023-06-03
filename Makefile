@@ -1,9 +1,9 @@
 # APP=$(shell basename $(shell git remote get-url origin))  #  $(APP)    shell dpkg --print-architecture
 APP=$(subst .git,,$(shell basename $(shell git remote get-url origin)))
-# REGISTRY=ghcr.io/evgenpavlyuchek
 REGISTRY=ghcr.io
 REPOSITORY=evgenpavlyuchek/tbot
-
+# REGISTRY=terr
+# REPOSITORY=tbot
 VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
 TARGETOS=linux
 #linux darwin windows
@@ -74,3 +74,37 @@ push:
 clean:
 	rm -rf tbot
 	docker rmi ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}
+
+deploy: #local k3d+github
+	k3d cluster create test
+	kubectl create namespace argocd
+	kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+	@sleep 10  # wait 10 sec
+	@echo "Waiting for ArgoCD pods to start..."
+	@kubectl wait --for=condition=Ready pod -n argocd --all --timeout=300s
+	@echo "ArgoCD pods are ready!"
+	# kubectl apply -f ../maketbotargocd.yaml
+	sed -i 's/targetRevision: HEAD/targetRevision: develop/' ../maketbotargocd.yaml && kubectl apply -f ../maketbotargocd.yaml
+	@echo "=================================================="
+	kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+	@echo "=================================================="
+	kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+port: #local
+	kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+	kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+check: #local k3d
+	argocd login localhost:8080 --username admin --password "$(shell kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d)" --insecure
+	argocd app list
+	@echo "=================================================="
+	argocd app get tbot
+
+dep: #local k3d
+	docker build . -t ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}  --build-arg TARGETARCH=${TARGETARCH}
+	docker push ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}
+	k3d cluster create test || true
+	helm install tbot ./helm --values ../maketokenvalue.yaml --set image.tag=${VERSION} --set image.os=${TARGETOS} --set image.arch=${TARGETARCH}
+
+del: #local
+	k3d cluster delete test
