@@ -3,9 +3,12 @@
 # Declare variables to be passed into your templates.
 replicaCount: 1
 image:
-  repository: terr
-  tag: "v1.0.7-a5e1123"
-  arch: arm64
+  registry: "ghcr.io"
+  # repository: ghcr.io/evgenpavlyuchek
+  repository: "evgenpavlyuchek/tbot"
+  tag: "v1.0.8-606fb47"
+  os: linux
+  arch: amd64
 secret:
   name: tbot
   tokenName: TELE_TOKEN

@@ -1,4 +1,5 @@
 # tbot
+[![TBOT-CICD](https://github.com/EvgenPavlyuchek/tbot/actions/workflows/cicd.yml/badge.svg)](https://github.com/EvgenPavlyuchek/tbot/actions/workflows/cicd.yml)
 
 This is telegram bot 
 

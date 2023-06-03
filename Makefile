@@ -1,15 +1,20 @@
 # APP=$(shell basename $(shell git remote get-url origin))  #  $(APP)    shell dpkg --print-architecture
 APP=$(subst .git,,$(shell basename $(shell git remote get-url origin)))
 # REGISTRY=ghcr.io/evgenpavlyuchek
-REGISTRY=terr
+REGISTRY=ghcr.io
+REPOSITORY=evgenpavlyuchek/tbot
+
 VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
-TARGETOS=linux #linux darwin windows
-TARGETARCH=arm64 #amd64 arm64 arm i386
+TARGETOS=linux
+#linux darwin windows
+TARGETARCH=amd64
+#amd64 arm64 arm i386
 
 # linux: $(eval TARGETOS=linux) $(eval TARGETARCH=arm) build
 # arm: $(eval TARGETOS=arm) $(eval TARGETARCH=arm64) build
 # macos: $(eval TARGETOS=darwin) $(eval TARGETARCH=arm) build
 # windows: $(eval TARGETOS=windows) $(eval TARGETARCH=arm64) build
+
 
 ifneq ($(findstring $(MAKECMDGOALS), "linux32"),)
 	TARGETOS = linux
@@ -23,7 +28,7 @@ endif
 
 ifneq ($(findstring $(MAKECMDGOALS), "linux"),)
 	TARGETOS = linux
-	TARGETARCH = arm
+	TARGETARCH = amd64
 endif
 
 ifneq ($(findstring $(MAKECMDGOALS), "arm"),)
@@ -57,14 +62,15 @@ get:
 	go get
 
 build: format get
-	CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -v -o tbot -ldflags "-X="github.com/EvgenPavlyuchek/tbot/cmd.appVersion=${VERSION}
+	CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -v -o tbot -ldflags "-X="github.com/EvgenPavlyuchek/tbot/cmd.appVersion=${VERSION}-${TARGETOS}-${TARGETARCH}
 
 image:
-	docker build . -t ${REGISTRY}/${APP}:${VERSION}-${TARGETARCH}  --build-arg TARGETARCH=${TARGETARCH}
+	# docker build . -t ${REGISTRY}/${APP}:${VERSION}-${TARGETARCH}  --build-arg TARGETARCH=${TARGETARCH}
+	docker build . -t ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}  --build-arg TARGETARCH=${TARGETARCH}
 
 push:
-	docker push ${REGISTRY}/${APP}:${VERSION}-${TARGETARCH}
+	docker push ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}
 
 clean:
 	rm -rf tbot
-	docker rmi ${REGISTRY}/${APP}:${VERSION}-${TARGETARCH}
+	docker rmi ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}

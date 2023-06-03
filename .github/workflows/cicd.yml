@@ -1,0 +1,67 @@
+name: TBOT-CICD
+env:
+  GIT_TOKEN_WTITE: "${{ secrets.GIT_TOKEN }}"
+  TELEGRAM_TOKEN_ENV: "${{ secrets.TELEGRAM_TOKEN }}"
+  # TARGETARCH: amd64
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+
+
+jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Run test  
+        run : make test
+
+      - name: Print Owner and Token
+        run: |
+          echo "${{ github.repository_owner }}"
+          echo "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }} 
+          password: ${{ env.GIT_TOKEN_WTITE }}
+
+      - name: Build&Push
+        env:
+          APP: "tbot"
+          # REGISTRY: ${{ secrets.GIT_USERNAME }}
+          REGISTRY: ${{ github.repository_owner }} 
+        run: make image push
+
+  cd:
+    name : CD
+    needs: ci
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - run: echo "VERSION=$(git describe --tags --abbrev=0)-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+    - uses: mikefarah/yq@master
+      with:
+        # cmd: yq -i '.image.tag=strenv(VERSION) | .image.arch=strenv(TARGETARCH)' helm/values.yaml
+        cmd: yq -i '.image.tag=strenv(VERSION)' helm/values.yaml
+              
+    - run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git commit -am "update version $VERSION"
+        git push
