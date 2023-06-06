@@ -8,13 +8,12 @@ VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HE
 TARGETOS=linux
 #linux darwin windows
 TARGETARCH=amd64
-#amd64 arm64 arm i386
+#amd64 arm64 arm 386
 
 # linux: $(eval TARGETOS=linux) $(eval TARGETARCH=arm) build
 # arm: $(eval TARGETOS=arm) $(eval TARGETARCH=arm64) build
 # macos: $(eval TARGETOS=darwin) $(eval TARGETARCH=arm) build
 # windows: $(eval TARGETOS=windows) $(eval TARGETARCH=arm64) build
-
 
 ifneq ($(findstring $(MAKECMDGOALS), "linux32"),)
 	TARGETOS = linux
@@ -48,7 +47,6 @@ endif
 
 linux32 , linux64 , linux , arm , macos , windows: build
 
-
 format:
 	gofmt -s -w ./
 
@@ -65,8 +63,7 @@ build: format get
 	CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -v -o tbot -ldflags "-X="github.com/EvgenPavlyuchek/tbot/cmd.appVersion=${VERSION}-${TARGETOS}-${TARGETARCH}
 
 image:
-	# docker build . -t ${REGISTRY}/${APP}:${VERSION}-${TARGETARCH}  --build-arg TARGETARCH=${TARGETARCH}
-	docker build . -t ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}  --build-arg TARGETARCH=${TARGETARCH}
+	docker build . -t ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}  --build-arg TARGETARCH=${TARGETARCH} --build-arg TARGETOS=${TARGETOS}
 
 push:
 	docker push ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}
@@ -101,10 +98,18 @@ check: #local k3d
 	argocd app get tbot
 
 dep: #local k3d
-	docker build . -t ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}  --build-arg TARGETARCH=${TARGETARCH}
+	docker build . -t ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}  --build-arg TARGETARCH=${TARGETARCH} --build-arg TARGETOS=${TARGETOS}
 	docker push ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}
 	k3d cluster create test || true
 	helm install tbot ./helm --values ../maketokenvalue.yaml --set image.tag=${VERSION} --set image.os=${TARGETOS} --set image.arch=${TARGETARCH}
 
-del: #local
+d: #local
 	k3d cluster delete test
+
+k: #local
+	k3d cluster create test
+
+
+# target:
+# 	@echo "Value of MY_VARIABLE: $(MY_VARIABLE)"
+# make target MY_VARIABLE=new_value
