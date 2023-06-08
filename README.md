@@ -1,19 +1,22 @@
-# tbot
+# TBot Telegram Bot
+
+This is a telegram bot 
+
 [![TBOT-CICD](https://github.com/EvgenPavlyuchek/tbot/actions/workflows/cicd.yml/badge.svg)](https://github.com/EvgenPavlyuchek/tbot/actions/workflows/cicd.yml)
 
-This is telegram bot 
+# CI/CD
 
-Bot URL : https://t.me/ourterra1_bot
+![CICD](https://github.com/EvgenPavlyuchek/tbot/blob/main/cicd.jpg)
 
-# How to build and run
+# Installation
 
 1. Clone repository : `git clone`
 2. Create new bot in Telegram
-3. Add bot's token into project variable TELE_TOKEN
-4. Build project with 'go build -ldflags "-X="<git>/cmd.appVersion=V<version number>'
+3. Add into project bot's token variable TELE_TOKEN
+4. Build project with 'go build -ldflags "-X="github.com/EvgenPavlyuchek/tbot/cmd.appVersion=v1.0.3-linux-amd64
 5. Run './tbot start'
 
-# How to use
+# Using
 
 You can send comands in bot
 - /start
