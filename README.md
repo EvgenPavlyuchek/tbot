@@ -6,7 +6,7 @@ This is a telegram bot
 
 # CI/CD
 
-![CICD](https://github.com/EvgenPavlyuchek/tbot/blob/main/cicd.jpg)
+![CICD](cicd.jpg)
 
 # Installation
 
