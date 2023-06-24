@@ -5,7 +5,7 @@ replicaCount: 1
 image:
   registry: "ghcr.io"
   repository: "evgenpavlyuchek/tbot"
-  tag: "v1.1.2-29b1e31"
+  tag: "v1.1.1-8ac7590"
   os: linux
   arch: amd64
   # registry: "terr"
