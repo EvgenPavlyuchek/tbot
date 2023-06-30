@@ -41,7 +41,7 @@ pipeline {
         GITHUB_TOKEN=credentials('ghcr')
     }
     stages {
-        
+
         stage("clone") {
             steps {
                 echo 'CLONE  REPOSITORY'
@@ -55,7 +55,7 @@ pipeline {
                 script {
                     f_ChoiceOs('test', params.OS, params.ARCH)
                     // sh 'make test TARGETOS=' + params.OS + ' TARGETARCH=' + params.ARCH
-                }               
+                }
             }
         }
 
@@ -75,9 +75,9 @@ pipeline {
                 script {
                     f_ChoiceOs('image', params.OS, params.ARCH)
                     // sh 'make image TARGETOS=' + params.OS + ' TARGETARCH=' + params.ARCH
-                }    
+                }
             }
-        }  
+        }
 
         stage('push') {
             steps {
@@ -86,7 +86,7 @@ pipeline {
                     sh 'echo $GITHUB_TOKEN_PSW | docker login ghcr.io -u $GITHUB_TOKEN_USR --password-stdin'
                     f_ChoiceOs('push', params.OS, params.ARCH)
                     // sh 'make push TARGETOS=' + params.OS + ' TARGETARCH=' + params.ARCH
-                }    
+                }
             }
         }
     }

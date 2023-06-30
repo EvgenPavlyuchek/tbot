@@ -6,3 +6,4 @@ terraform.tfstate
 kind-cluster-config
 makevars.tfvars
 maketokenvalue.yaml
+temp.yaml

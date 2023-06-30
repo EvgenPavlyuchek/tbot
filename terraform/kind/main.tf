@@ -64,7 +64,7 @@ provider "github" {
 }
 
 resource "github_repository_file" "yaml1" {
-  depends_on          = [module.flux_bootstrap]
+  depends_on          = [module.flux_bootstrap_kind]
   repository          = var.FLUX_GITHUB_REPO
   branch              = "main"
   file                = "${var.FLUX_GITHUB_TARGET_PATH}/demo/ns.yaml"
@@ -81,7 +81,7 @@ EOF
 }
 
 resource "github_repository_file" "yaml2" {
-  depends_on          = [module.flux_bootstrap]
+  depends_on          = [module.flux_bootstrap_kind]
   repository          = var.FLUX_GITHUB_REPO
   branch              = "main"
   file                = "${var.FLUX_GITHUB_TARGET_PATH}/demo/tbot-gr.yaml"
@@ -105,7 +105,7 @@ EOF
 }
 
 resource "github_repository_file" "yaml3" {
-  depends_on          = [module.flux_bootstrap]
+  depends_on          = [module.flux_bootstrap_kind]
   repository          = var.FLUX_GITHUB_REPO
   branch              = "main"
   file                = "${var.FLUX_GITHUB_TARGET_PATH}/demo/tbot-hr.yaml"

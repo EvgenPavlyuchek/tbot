@@ -71,16 +71,50 @@ clean:
 
 ########################	local k3d + argocd	########################
 
+TELE_TOKEN=$(shell grep -oP 'TELE_TOKEN\s*=\s*"\K[^"]+' ../makevars.tfvars)
+TARGET_BRANCHE=develop
+
 deploy:
 	k3d cluster create test
 	kubectl create namespace argocd
 	kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-	@sleep 10  # wait 10 sec
 	@echo "Waiting for ArgoCD pods to start..."
+	@sleep 10  # wait 10 sec
 	@kubectl wait --for=condition=Ready pod -n argocd --all --timeout=300s
 	@echo "ArgoCD pods are ready!"
-	# kubectl apply -f ../maketbotargocd.yaml
-	sed -i 's/targetRevision: HEAD/targetRevision: develop/' ../maketbotargocd.yaml && kubectl apply -f ../maketbotargocd.yaml
+	@echo "\
+apiVersion: argoproj.io/v1alpha1\n\
+kind: Application\n\
+metadata:\n\
+  name: tbot\n\
+  namespace: argocd\n\
+  finalizers:\n\
+    - resources-finalizer.argocd.argoproj.io\n\
+spec:\n\
+  destination:\n\
+    name: ''\n\
+    namespace: default\n\
+    server: 'https://kubernetes.default.svc'\n\
+  source:\n\
+    path: helm\n\
+    repoURL: 'https://github.com/EvgenPavlyuchek/tbot.git'\n\
+    targetRevision: ${TARGET_BRANCHE}\n\
+    helm:\n\
+      valueFiles:\n\
+        - values.yaml\n\
+      parameters:\n\
+        - name: secret.secretValue\n\
+          value: \"${TELE_TOKEN}\"\n\
+  project: default\n\
+  syncPolicy:\n\
+    syncOptions:\n\
+      - CreateNamespace=true\n\
+    automated:\n\
+      prune: true\n\
+      selfHeal: true" > temp.yaml
+	# sed -i 's/targetRevision: HEAD/targetRevision: develop/' ./temp.yaml && kubectl apply -f ./temp.yaml
+	kubectl apply -f ./temp.yaml
+	rm temp.yaml
 	@echo "=================================================="
 	kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 	@echo "=================================================="
@@ -100,7 +134,11 @@ dep: #without argocd
 	docker build . -t ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}  --build-arg TARGETARCH=${TARGETARCH} --build-arg TARGETOS=${TARGETOS}
 	docker push ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}
 	k3d cluster create test || true
-	helm install tbot ./helm --values ../maketokenvalue.yaml --set image.tag=${VERSION} --set image.os=${TARGETOS} --set image.arch=${TARGETARCH}
+	@echo "secret:\n\
+  secretValue: ${TELE_TOKEN}" > temp.yaml
+	helm install tbot ./helm --values ./temp.yaml --set image.tag=${VERSION} --set image.os=${TARGETOS} --set image.arch=${TARGETARCH}
+	rm temp.yaml
+	kubectl get po -w
 
 del:
 	k3d cluster delete test
@@ -132,8 +170,19 @@ tplan:
 	terraform -chdir=terraform/${ENV}/ validate
 	terraform -chdir=terraform/${ENV}/ plan -var-file=../../../makevars.tfvars
 
+tcost:
+    ifeq ($(ENV), gke)
+		cd ./terraform/${ENV}/
+		infracost breakdown --path .
+		cd ../..
+    else ifeq ($(ENV), login)
+		infracost auth login
+    else
+		@echo "Not gcloud"
+    endif
+
 tapply:
-	# @echo "####################################################"
+	@echo "####################################################"
 	# @echo "Press Enter to continue..."
 	# @read _
 	# terraform -chdir=terraform/${ENV}/ workspace new ${ENV} || true
@@ -149,12 +198,13 @@ tapply:
     endif
 
 tdestroy:
-	# @echo "####################################################"
+	@echo "####################################################"
 	# @echo "Press Enter to continue..."
 	# @read _
 	# @-terraform -chdir=terraform/${ENV}/ workspace new ${ENV}
 	# terraform -chdir=terraform/${ENV}/ workspace select ${ENV} 
 	terraform -chdir=terraform/${ENV}/ destroy -var-file=../../../makevars.tfvars --auto-approve
+	make github_del_repo
 
 tdestroy_target:
     ifeq ($(ENV), gke)
@@ -207,4 +257,43 @@ gitlab_runner:
 		docker ps -a
     endif
 
-########################	gitlab_runner	########################
+########################	jenkins 	########################
+
+jenkins:
+	kind create cluster --name jenkins
+	helm repo add jenkinsci https://charts.jenkins.io/
+	helm repo update
+	helm install jenkins jenkinsci/jenkins
+	@echo "Waiting for jenkins pods to start..."
+	@sleep 10  # wait 10 sec
+	@kubectl wait --for=condition=Ready pod/jenkins-0 --timeout=300s
+	@echo "jenkins pods are ready!"
+	@echo "####################################################"
+	@echo "admin"
+	@kubectl exec --namespace default -it svc/jenkins -c jenkins -- /bin/cat /run/secrets/additional/chart-admin-password && echo
+	@kubectl port-forward svc/jenkins 8080:8080
+
+jenkins-d:
+	kind delete cluster --name jenkins
+
+############	pre-commit github hook + gitleaks 	##############
+
+gl-on:
+	git config hooks.gitleaks true
+
+gl-off:
+	git config hooks.gitleaks false
+
+gl-onn:
+	git config hooks.whitespace true
+
+gl-offf:
+	git config hooks.whitespace false
+
+gl-cp:
+	cp ./scripts/pre-commit.sh ./.git/hooks/pre-commit
+
+gl-run:
+	./scripts/pre-commit.sh
+
+############	pre-commit github hook + gitleaks 	##############
