@@ -34,6 +34,7 @@ spec:
         name: dev-mem
       containers:
         - name: {{ .Release.Name }}
+        # - name: {{ .Chart.Name }}
           # image: {{ .Values.image.repository }}/{{ .Release.Name }}:{{ .Values.image.tag }}-{{ .Values.image.arch | default "amd64"}}
           image: {{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}-{{ .Values.image.os | default "linux"}}-{{ .Values.image.arch | default "amd64"}}
           securityContext:

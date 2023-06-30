@@ -56,7 +56,7 @@ test:
 get:
 	go get
 
-build: format get
+build: format get #Unix-like system requared
 	CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -v -o tbot -ldflags "-X="github.com/EvgenPavlyuchek/tbot/cmd.appVersion=${VERSION}-${TARGETOS}-${TARGETARCH}
 
 image:
@@ -64,6 +64,11 @@ image:
 
 push:
 	docker push ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}
+
+all: build image push
+
+all1:
+	git commit -am "test"
 
 clean:
 	rm -rf tbot
@@ -297,3 +302,5 @@ gl-run:
 	./scripts/pre-commit.sh
 
 ############	pre-commit github hook + gitleaks 	##############
+
+# git diff 5313d ./cmd/root.go

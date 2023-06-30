@@ -94,8 +94,8 @@ metadata:
 spec:
   interval: 1m0s
   ref:
-    # branch: main
-    branch: develop
+    branch: main
+    # branch: develop
   url: https://github.com/EvgenPavlyuchek/tbot
 EOF
   commit_message      = "Managed by Terraform"
