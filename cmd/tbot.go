@@ -18,6 +18,8 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	telebot "gopkg.in/telebot.v3"
+
+	"github.com/rs/zerolog"
 )
 
 var (
@@ -94,6 +96,7 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		logger := zerodriver.NewProductionLogger()
+		logger.Level(zerolog.DebugLevel)
 
 		fmt.Printf("tbot %s started", appVersion)
 		tbot, err := telebot.NewBot(telebot.Settings{
@@ -137,7 +140,7 @@ to quickly create a Cobra application.`,
 		*/
 
 		tbot.Handle(telebot.OnText, func(m telebot.Context) error {
-
+			// logger.Info().Str("Payload", m.Text()).Msg(m.Message().Payload)
 			logger.Print(m.Message().Payload, m.Text())
 			payload := m.Message().Payload
 			payload2 := m.Text()

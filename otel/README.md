@@ -1,6 +1,6 @@
 # Open-telemetry observability
 
-Sample configuration for Kbot that send logs to [OpenTelemetry Collector] and metrics to [OpenTelemetry Collector] or [Prometheus].
+Sample configuration for Tbot that send logs to [OpenTelemetry Collector] and metrics to [OpenTelemetry Collector] or [Prometheus].
 
 ## Prerequisites
 

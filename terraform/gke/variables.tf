@@ -22,7 +22,7 @@ variable "GOOGLE_PROJECT" {
 
 variable "GKE_NUM_NODES" {
   type        = number
-  default     = 2
+  default     = 3
   description = "GKE nodes number"
 }
 
@@ -44,7 +44,7 @@ variable "GITHUB_TOKEN" {
 
 variable "FLUX_GITHUB_REPO" {
   type        = string
-  default     = "flux-gitops"
+  default     = "flux-dev-gke"
   description = "Flux gitops repository"
 }
 

@@ -3,7 +3,7 @@ services:
 
   # Tbot
   tbot:
-    image: ghcr.io/evgenpavlyuchek/tbot:v1.1.2-8ac7590-linux-amd64
+    image: ghcr.io/evgenpavlyuchek/tbot:v1.1.2-f8ccc54-linux-amd64
     environment:
       - METRICS_HOST=collector:4317
       - TELE_TOKEN=${TELE_TOKEN}
@@ -27,7 +27,7 @@ services:
     volumes:
       - ./prometheus/prometheus.yaml:/etc/prometheus.yaml
     ports:
-      - "8090:9090"
+      - "9090:9090"
 
   # FluentBit
   fluentbit:

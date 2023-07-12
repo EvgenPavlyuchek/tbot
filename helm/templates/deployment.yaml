@@ -48,3 +48,5 @@ spec:
               secretKeyRef:
                 key: {{ .Values.secret.tokenKey }}
                 name: {{ .Values.secret.name }}
+          - name: {{ .Values.otel.otelName }}
+            value: {{ .Values.otel.otelValue }}

@@ -48,3 +48,6 @@ kind-cluster-config
 makevars.tfvars
 maketokenvalue.yaml
 temp.yaml
+docker-compose copy.yaml
+Makefile
+/otel/all

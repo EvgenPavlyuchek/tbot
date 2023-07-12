@@ -66,13 +66,26 @@ push:
 	docker push ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}
 
 all: build image push
+	sed -i -E 's/(tag:\s*)"([^"]*)"/\1"${VERSION}"/' helm/values.yaml
+	sed -i -E 's/(appVersion:\s*)"([^"]*)"/\1"${VERSION}"/' helm/Chart.yaml
 
 all1:
 	git commit -am "test"
+	git push
 
 clean:
 	rm -rf tbot
 	docker rmi ${REGISTRY}/${REPOSITORY}:${VERSION}-${TARGETOS}-${TARGETARCH}
+
+#################################	helm	###########################
+
+hinstall:
+	helm install tbot ./helm --set secret.secretValue=${TELE_TOKEN}
+# --set image.tag=${VERSION} --set image.os=${TARGETOS} --set image.arch=${TARGETARCH}
+
+htemplate:
+	helm template tbot ./helm --set secret.secretValue=${TELE_TOKEN}
+# --set image.tag=${VERSION} --set image.os=${TARGETOS} --set image.arch=${TARGETARCH}
 
 ########################	local k3d + argocd	########################
 
@@ -156,8 +169,8 @@ del:
 
 # ENV environment variable needs to be set to gke or kind
 # ENV=gke
-# ENV=gke make tinit
-# ENV=kind make tinit
+# ENV=gke make tapply
+# ENV=kind make tapply
 
 tinit:
 	terraform -chdir=terraform/${ENV}/ init
@@ -301,6 +314,18 @@ gl-cp:
 gl-run:
 	./scripts/pre-commit.sh
 
-############	pre-commit github hook + gitleaks 	##############
+############        	OTEL monitoring           ##############
 
-# git diff 5313d ./cmd/root.go
+compose_up:
+	docker-compose -f otel/docker-compose.yaml up
+
+compose_down:
+	docker-compose -f otel/docker-compose.yaml down
+
+compose_upd:
+	docker-compose -f otel/docker-compose.yaml up -d
+
+compose_rebuild:
+	docker-compose -f otel/docker-compose.yaml rebuild
+
+############        	OTEL monitoring           ##############
